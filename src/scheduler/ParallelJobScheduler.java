@@ -14,12 +14,6 @@ public class ParallelJobScheduler {
 
         List<Job> allChildrenJobs = getAllChildrenJobsInOrder(new HashSet<>(startingJobs));
 
-        // Print all Children Jobs
-        // System.out.println("All Children Jobs");
-        // for (Job job : allChildrenJobs) {
-        //     System.out.println(job.getName());
-        // }
-
         for (Job job : startingJobs) {
             executor.submit(() -> processJob(job));
         }
@@ -30,24 +24,6 @@ public class ParallelJobScheduler {
 
         // Shut down the thread pool
         executor.shutdown();
-    }
-
-    private Set<Job> getAllChildJobs(Set<Job> startingJobs) {
-        Set<Job> allChildrenJobs = new HashSet<>();
-        Queue<Job> queue = new LinkedList<>(startingJobs);
-        while (!queue.isEmpty()) {
-            Job job = queue.poll();
-            if (!startingJobs.contains(job)) {
-                allChildrenJobs.add(job);
-            }
-            for (Job childJob : job.getChildrenJobs()) {
-                if (!allChildrenJobs.contains(childJob)) {
-                    queue.add(childJob);
-                }
-            }
-        }
-
-        return allChildrenJobs;
     }
 
     private List<Job> getAllChildrenJobsInOrder(Set<Job> startingJobs) {
