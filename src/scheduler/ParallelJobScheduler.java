@@ -5,14 +5,16 @@ import models.Job;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class ParallelJobScheduler {
     private ExecutorService executor;
 
-    public void scheduleAllJobs(List<Job> startingJobs) {
+    public void scheduleAllJobs(List<Job> allJobs) {
         executor = Executors.newFixedThreadPool(4);
 
-        List<Job> allChildrenJobs = getAllChildrenJobsInOrder(new HashSet<>(startingJobs));
+        Set<Job> startingJobs = getAllStartingJobs(allJobs);
+        List<Job> allChildrenJobs = getAllChildrenJobsInOrder(startingJobs);
 
         for (Job job : startingJobs) {
             executor.submit(() -> processJob(job));
@@ -24,6 +26,13 @@ public class ParallelJobScheduler {
 
         // Shut down the thread pool
         executor.shutdown();
+    }
+
+    private Set<Job> getAllStartingJobs(List<Job> allJobs) {
+        return allJobs
+                .stream()
+                .filter(job -> job.getParentJobs().isEmpty())
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     private List<Job> getAllChildrenJobsInOrder(Set<Job> startingJobs) {

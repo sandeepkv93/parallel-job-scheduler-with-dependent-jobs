@@ -17,7 +17,7 @@ public class Main {
         Job jobH = new Job("Job H", jobE);
         Job jobI = new Job("Job I", jobF, jobG, jobH);
 
-        List<Job> startingJobs = Arrays.asList(jobA, jobB);
+        List<Job> startingJobs = Arrays.asList(jobA, jobB, jobC, jobD, jobE, jobF, jobG, jobH, jobI);
 
         ParallelJobScheduler parallelJobScheduler = new ParallelJobScheduler();
         parallelJobScheduler.scheduleAllJobs(startingJobs);
