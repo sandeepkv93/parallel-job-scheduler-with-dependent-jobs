@@ -1,4 +1,4 @@
-# parallel-job-scheduler-with-dependent-jobs
+# Parallel Job Scheduler With Dependent Jobs
 
 Write java program for Parallel Job Scheduler. Given a list of jobs and its children jobs
 
