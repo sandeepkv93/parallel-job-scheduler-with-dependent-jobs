@@ -43,6 +43,8 @@ public class Job implements Runnable{
     @Override
     public void run() {
         System.out.println(this.getName() + " started");
+        
+        // Simulate some work
         Random rand = new Random();
         int randomSleepTime = rand.nextInt(5) + 4; // random number between 4 and 8
 
@@ -51,6 +53,7 @@ public class Job implements Runnable{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        
         System.out.println(this.getName() + " completed");
     }
 }
