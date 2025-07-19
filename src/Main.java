@@ -22,14 +22,14 @@ public class Main {
         Job jobH = new Job("Job H", jobE);
         Job jobI = new Job("Job I", jobF, jobG, jobH);
 
-        // Create a list of all starting jobs
-        List<Job> allJobs = Arrays.asList(jobA, jobB, jobC, jobD, jobE, jobF, jobG, jobH, jobI);
+        // Create a list of starting jobs (jobs with no parent dependencies)
+        List<Job> startingJobs = Arrays.asList(jobA, jobB);
 
         // Create an instance of ParallelJobScheduler
         ParallelJobScheduler parallelJobScheduler = new ParallelJobScheduler();
 
         // Schedule all jobs using the scheduler
-        parallelJobScheduler.scheduleAllJobs(allJobs);
+        parallelJobScheduler.scheduleAllJobs(startingJobs);
     }
 }
 

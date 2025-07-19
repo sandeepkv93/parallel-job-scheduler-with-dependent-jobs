@@ -5,28 +5,43 @@ import models.Job;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class ParallelJobScheduler {
     private ExecutorService executor;
+    private final int threadPoolSize;
+    
+    public ParallelJobScheduler() {
+        this(4);
+    }
+    
+    public ParallelJobScheduler(int threadPoolSize) {
+        this.threadPoolSize = threadPoolSize;
+    }
 
     /**
      * Schedule all jobs in the given list
      *
-     * @param allJobs list of all jobs to be scheduled
+     * @param startingJobs list of starting jobs to be scheduled
      */
-    public void scheduleAllJobs(List<Job> allJobs) {
+    public void scheduleAllJobs(List<Job> startingJobs) {
         // Create a fixed thread pool
-        executor = Executors.newFixedThreadPool(4);
+        executor = Executors.newFixedThreadPool(threadPoolSize);
 
-        // Get all starting jobs (jobs with no parents)
-        Set<Job> startingJobs = getAllStartingJobs(allJobs);
+        // Convert to set for efficient lookups
+        Set<Job> startingJobsSet = new HashSet<>(startingJobs);
+        
+        // Detect cycles before execution
+        if (hasCycle(startingJobsSet)) {
+            throw new IllegalArgumentException("Cycle detected in job dependencies");
+        }
 
         // Get all child jobs in order
-        List<Job> allChildrenJobs = getAllChildrenJobsInOrder(startingJobs);
+        List<Job> allChildrenJobs = getAllChildrenJobsInOrder(startingJobsSet);
 
         // Submit starting jobs to the thread pool
-        for (Job job : startingJobs) {
+        for (Job job : startingJobsSet) {
             executor.submit(() -> processJob(job));
         }
 
@@ -35,18 +50,71 @@ public class ParallelJobScheduler {
             executor.submit(() -> processJob(job));
         }
 
-        // Shut down the thread pool
+        // Properly shut down the thread pool
         executor.shutdown();
+        try {
+            // Wait for all tasks to complete or timeout after 60 seconds
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+                // Wait a bit more for tasks to respond to being cancelled
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Pool did not terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            // Cancel currently executing tasks
+            executor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
-     * Get all starting jobs (jobs with no parents)
+     * Check if there is a cycle in the job dependency graph
      *
-     * @param allJobs list of all jobs
-     * @return set of starting jobs
+     * @param startingJobs set of starting jobs
+     * @return true if cycle exists, false otherwise
      */
-    private Set<Job> getAllStartingJobs(List<Job> allJobs) {
-        return allJobs.stream().filter(job -> job.getParentJobs().isEmpty()).collect(Collectors.toCollection(HashSet::new));
+    private boolean hasCycle(Set<Job> startingJobs) {
+        Set<Job> visited = new HashSet<>();
+        Set<Job> recursionStack = new HashSet<>();
+        
+        for (Job job : startingJobs) {
+            if (hasCycleDFS(job, visited, recursionStack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * DFS helper method for cycle detection
+     *
+     * @param job current job
+     * @param visited set of visited jobs
+     * @param recursionStack set of jobs in current recursion stack
+     * @return true if cycle detected, false otherwise
+     */
+    private boolean hasCycleDFS(Job job, Set<Job> visited, Set<Job> recursionStack) {
+        if (recursionStack.contains(job)) {
+            return true; // Back edge found, cycle detected
+        }
+        
+        if (visited.contains(job)) {
+            return false; // Already processed
+        }
+        
+        visited.add(job);
+        recursionStack.add(job);
+        
+        for (Job child : job.getChildrenJobs()) {
+            if (hasCycleDFS(child, visited, recursionStack)) {
+                return true;
+            }
+        }
+        
+        recursionStack.remove(job);
+        return false;
     }
 
     /**
