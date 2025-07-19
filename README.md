@@ -128,20 +128,20 @@ job.setSleepTimeMs(100); // fixed execution time for testing
 
 ```
 src/
-├── Main.java                          # Example application
-├── models/
-│   └── Job.java                       # Job class with execution logic
-└── scheduler/
-    └── ParallelJobScheduler.java      # Main scheduler implementation
+├── main/java/                         # Source code (standard Maven/Gradle layout)
+│   ├── Main.java                      # Example application
+│   ├── models/
+│   │   └── Job.java                   # Job class with execution logic
+│   └── scheduler/
+│       └── ParallelJobScheduler.java  # Main scheduler implementation
+└── test/java/                         # Test code (standard Maven/Gradle layout)
+    ├── models/
+    │   └── JobTest.java               # Unit tests for Job class
+    ├── scheduler/
+    │   └── ParallelJobSchedulerTest.java # Unit tests for scheduler
+    ├── IntegrationTest.java           # End-to-end integration tests
+    └── TestRunner.java                # Simple test runner
 
-test/
-├── models/
-│   └── JobTest.java                   # Unit tests for Job class
-├── scheduler/
-│   └── ParallelJobSchedulerTest.java  # Unit tests for scheduler
-└── IntegrationTest.java               # End-to-end integration tests
-
-TestRunner.java                        # Simple test runner
 build.gradle                          # Gradle build configuration
 TESTING.md                            # Comprehensive testing documentation
 ```
@@ -150,31 +150,34 @@ TESTING.md                            # Comprehensive testing documentation
 
 ### Run the Example
 
+**Using Gradle (Recommended):**
 ```bash
-javac -d . src/Main.java src/models/Job.java src/scheduler/ParallelJobScheduler.java
-java Main
+./gradlew runMain
+```
+
+**Manual compilation:**
+```bash
+javac -d build -cp src/main/java src/main/java/**/*.java
+java -cp build Main
 ```
 
 ### Run Tests
 
 **Using Gradle (Recommended):**
-
 ```bash
 ./gradlew test
 ```
 
 **Using Simple Test Runner:**
-
 ```bash
-javac -d . src/models/Job.java src/scheduler/ParallelJobScheduler.java TestRunner.java
-java TestRunner
+javac -d build -cp src/main/java src/main/java/**/*.java src/test/java/TestRunner.java
+java -cp build TestRunner
 ```
 
-**Manual compilation:**
-
+**Manual compilation with JUnit:**
 ```bash
-javac -d . src/**/*.java test/**/*.java
-# Run specific test classes as needed
+javac -d build -cp "src/main/java:junit-platform-console-standalone.jar" src/main/java/**/*.java src/test/java/**/*.java
+# Run with JUnit Platform Console Launcher
 ```
 
 ## Testing

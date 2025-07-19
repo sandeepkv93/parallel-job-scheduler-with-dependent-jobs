@@ -11,18 +11,10 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-        }
-    }
-    test {
-        java {
-            srcDirs = ['test']
-        }
-    }
-}
+// Using standard Maven/Gradle directory layout
+// sourceSets block not needed as we're using defaults:
+// src/main/java for source code
+// src/test/java for test code
 
 test {
     useJUnitPlatform()
@@ -34,5 +26,5 @@ test {
 
 task runMain(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'Main'
+    mainClass = 'Main'
 }
